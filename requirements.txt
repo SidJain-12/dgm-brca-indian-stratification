@@ -1,0 +1,11 @@
+numpy>=1.24
+pandas>=2.0
+scipy>=1.10
+statsmodels>=0.14
+seaborn>=0.12
+matplotlib>=3.7
+openpyxl>=3.1
+lifelines>=0.27
+PyYAML>=6.0
+# optional (pathway gene sets / enrichment):
+# gseapy>=1.0

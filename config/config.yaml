@@ -1,0 +1,60 @@
+# ============================================================================
+# DGM-BRCA stratification pipeline — central configuration
+# All paths are relative to the repository root unless absolute.
+# ============================================================================
+
+paths:
+  # Binary patient x gene mutation matrices (index = patient_id, values in {0,1})
+  indian_matrix: "data/raw/indian_patient_gene_matrix.csv"
+  tcga_matrix:   "data/raw/tcga_patient_gene_matrix.csv"
+
+  # Cluster assignment CSVs. Expected columns: patient_id, <cluster_col>
+  cluster_dir:   "data/clusters"
+
+  # Clinical / survival table (index = patient_id). See survival.time_col / event_col.
+  clinical:      "data/raw/BRCA_surv.csv"
+
+  # Output root; every module writes into a sub-folder here.
+  results_dir:   "results"
+
+figure:
+  # Publication export settings — applied globally by src.utils.set_pub_style()
+  format: "tiff"          # native TIFF export
+  dpi: 600                # >= 600 DPI as required by most A/A* venues
+  compression: "tiff_lzw" # lossless, keeps file sizes sane
+  font_family: "DejaVu Sans"
+  base_fontsize: 12
+  also_save_pdf: true     # vector copy alongside the raster TIFF (handy for LaTeX)
+
+cohorts:
+  indian_label: "Indian"
+  tcga_label:   "TCGA"
+  patient_id_len: 12       # TCGA-style barcode truncation for ID harmonisation
+
+clustering:
+  # Cluster columns present in the cluster CSVs, keyed by a friendly name.
+  solutions:
+    PAM_k2: "cluster_PAM_k2"
+    PAM_k3: "cluster_PAM_k3"
+  # Optional label remap applied to a solution (old_label: new_label), 1-indexed
+  # display. Leave empty to keep native 0..k-1 ordering.
+  relabel:
+    PAM_k3: {0: 1, 1: 2, 2: 0}
+  display_offset: 1        # show clusters as 1..k rather than 0..k-1
+
+analysis:
+  top_n_genes: 20
+  # Genes whose high mutation frequency is expected to be length/mapping driven.
+  # Flagged (not silently dropped) in every stats export — see LENGTH_ARTIFACT_GENES.
+  flag_length_artifacts: true
+  fdr_method: "fdr_bh"     # Benjamini-Hochberg
+  fdr_alpha: 0.05
+  cooccurrence:
+    top_n_genes: 30        # build co-occurrence over the N most mutated genes per cluster
+    min_mutated: 5         # skip gene pairs where either gene is mutated < this many times
+
+survival:
+  time_col: "OS_time"      # overall-survival time (months)
+  event_col: "OS_event"    # 1 = death/event, 0 = censored
+  tmb_high_quantile: 0.75  # patients above this TMB quantile = "TMB-high"
+  driver_genes: ["TP53", "PIK3CA"]  # mutated vs wild-type survival contrasts
